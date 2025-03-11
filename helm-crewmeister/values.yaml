@@ -16,7 +16,7 @@ env:
   SPRING_DATASOURCE_PASSWORD: dev
 
 mysql:
-  image: sugesh23/devops-coding-challenge:13784366502
+  image: sugesh23/devops-coding-challenge:13784443217
   rootPassword: dev
   database: challenge
 
