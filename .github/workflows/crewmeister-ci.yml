@@ -1,9 +1,7 @@
 name: crewmeister-ci
 
 on: 
-  pull_request:
-    branches:
-      - main
+
   push:
     branches:
       - main
@@ -76,7 +74,7 @@ jobs:
 
     - name: Update tag in Kubernetes deployment manifest
       run: | 
-        sed -i "s|image: .*|image: ${{ secrets.DOCKER_USERNAME }}/devops-coding-challenge:${{ github.run_id }}|" kubernetes/deploy.yaml
+         sed -i "s|image: .*|image: ${{ secrets.DOCKER_USERNAME }}/devops-coding-challenge:${{ github.run_id }}|" helm-crewmeister/values.yaml
 
     - name: Commit and push changes
       run: |
