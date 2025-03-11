@@ -1,8 +1,0 @@
-global:
-  image:
-    repository: argoproj/argocd
-    tag: v2.1.7
-
-server:
-  service:
-    type: LoadBalancer
