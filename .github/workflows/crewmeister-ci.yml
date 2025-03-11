@@ -4,7 +4,10 @@ on:
   pull_request:
     branches:
       - main
-
+  push:
+    branches:
+      - main
+      - feature/*
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -68,7 +71,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.CREWMEISTER_GITHUB_TOKEN }}
 
     - name: Update tag in Kubernetes deployment manifest
       run: | 
