@@ -34,3 +34,4 @@ spec:
         resources:
           requests:
             storage: 1Gi
+        storageClassName: "manual"  # Ensure this matches your PV's storage class
