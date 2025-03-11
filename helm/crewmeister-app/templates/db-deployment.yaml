@@ -1,37 +1,33 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: db
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: db
-  serviceName: "db"
-  replicas: 1
   template:
     metadata:
       labels:
         app: db
     spec:
       containers:
-        - name: mysql
+        - name: db
           image: mysql:8.0
+          ports:
+            - containerPort: 3306
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: dev
             - name: MYSQL_DATABASE
               value: challenge
-          ports:
-            - containerPort: 3306
-          volumeMounts:
-            - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql
-  volumeClaimTemplates:
-    - metadata:
-        name: mysql-persistent-storage
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: "manual"  # Ensure this matches your PV's storage class
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - localhost
+            initialDelaySeconds: 30
+            periodSeconds: 10
