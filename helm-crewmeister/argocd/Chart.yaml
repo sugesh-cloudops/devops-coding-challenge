@@ -6,3 +6,8 @@ type: application
 
 version: 0.1.0
 appVersion: "2.1.7"
+
+dependencies:
+  - name: argocd
+    version: 5.46.8
+    repository: https://argoproj.github.io/argo-helm
