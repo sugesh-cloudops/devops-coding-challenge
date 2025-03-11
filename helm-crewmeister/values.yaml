@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: sugesh23/devops-coding-challenge-app
+  repository: sugesh23/devops-coding-challenge
   tag: v1
   pullPolicy: IfNotPresent
 
@@ -34,3 +34,38 @@ ingress:
   tls: []
 
 fullnameOverride: ""
+
+prometheus:
+  namespaceOverride: prometheus
+  alertmanager:
+    enabled: false
+  pushgateway:
+    enabled: false
+  server:
+    service:
+      type: LoadBalancer
+
+grafana:
+  namespaceOverride: grafana
+  adminPassword: admin
+  service:
+    type: LoadBalancer
+  ingress:
+    enabled: true
+    annotations: {}
+    hosts:
+      - host: grafana.example.com
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+
+argocd:
+  namespaceOverride: argocd
+  global:
+    image:
+      repository: argoproj/argocd
+      tag: v2.1.7
+  server:
+    service:
+      type: LoadBalancer
