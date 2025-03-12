@@ -18,9 +18,15 @@ spec:
           image: mysql:8.0
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: dev
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQL_DATABASE
-              value: challenge
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: MYSQL_DATABASE
           ports:
             - containerPort: 3306
           volumeMounts:
@@ -30,8 +36,8 @@ spec:
     - metadata:
         name: mysql-persistent-storage
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
             storage: 5Gi
-        storageClassName: "manual"  # Ensure this matches your PV's storage class
+        storageClassName: "manual"

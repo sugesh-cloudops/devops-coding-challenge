@@ -17,7 +17,8 @@ db:
     type: ClusterIP
     port: 3306
   env:
-    MYSQL_ROOT_PASSWORD: dev
+    MYSQL_ROOT_PASSWORD: ENC[SECRET]  
     MYSQL_DATABASE: challenge
   storage:
     size: 5Gi
+
