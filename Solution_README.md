@@ -37,7 +37,7 @@ The Terraform configuration is located in the `terraform` folder and is used to 
 The Terraform configuration follows a modular strategy to promote reusability and maintainability.
 Backed strategy to manage the state of the infrastructure.
 S3 bucket and DynamoDB is used to store the state of the infrastructure.
-Achived statefile Locking using DynamoDB.
+achived statefile Locking using DynamoDB.
 
 ### Directory Structure
 
@@ -58,9 +58,9 @@ The helm chart is organised in to basic structuere of helm chart.
 
 ### Deployed successfully in the EKS cluster
 Attached few screenshot of the output where the application is deployed successfully in the EKS cluster.
-![alt text](<Pasted Graphic.png>)
-![alt text](<Pasted Graphic 1.png>)
-![alt text](<Pasted Graphic 2.png>)
+![alt text](<snapshots/Pasted Graphic.png>)
+![alt text](<snapshots/Pasted Graphic 1.png>)
+![alt text](<snapshots/Pasted Graphic 2.png>)
 
 
 ### Directory Structure
