@@ -41,20 +41,7 @@ Achived statefile Locking using DynamoDB.
 
 ### Directory Structure
 
-├── backend
-│   └── main.tf
-├── main.tf
-├── modules
-│   ├── eks
-│   │   ├── main.tf
-│   │   ├── outputs.tf
-│   │   └── variables.tf
-│   └── vpc
-│       ├── main.tf
-│       ├── outputs.tf
-│       └── variables.tf
-├── outputs.tf
-└── variables.tf
+![alt text](image-1.png)
 
 ---
 
@@ -67,20 +54,7 @@ The `helm` folder contains the **Helm chart** used to deploy the application **c
 
 ### Directory Structure
 
-└── crewmeister-app
-    ├── Chart.yaml
-    ├── charts
-    ├── templates
-    │   ├── 1
-    │   ├── _helpers.tpl
-    │   ├── app-deployment.yaml
-    │   ├── app-service.yaml
-    │   ├── db-deployment.yaml
-    │   ├── db-service.yaml
-    │   ├── mysql-pv.yaml
-    │   ├── secret.yaml
-    │   └── serviceaccount.yaml
-    └── values.yaml
+![alt text](image.png)
 
 
 ### Deployed successfully in the EKS cluster
@@ -108,8 +82,11 @@ The following secrets need to be set up in your GitHub repository for the workfl
 - `GITHUB_TOKEN`: Your GitHub token 
 - `AWS_ACCESS_KEY_ID`: Your AWS access key ID
 - `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key
+- `AWS_ROLE_ARN`: Your AWS roles ARN
 
 ### Reference Image
+![alt text](image-2.png)
+![alt text](image-3.png)
 
 ---
 
