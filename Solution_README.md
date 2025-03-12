@@ -69,9 +69,9 @@ Attached few screenshot of the output where the application is deployed successf
 
 ### Deployed successfully in the EKS cluster
 Attached few screenshot of the output where the application is deployed successfully in the EKS cluster.
-![alt text](<Pasted Graphic.png>)
-![alt text](<Pasted Graphic 1.png>)
-![alt text](<Pasted Graphic 2.png>)
+![alt text](<snapshots/Pasted Graphic.png>)
+![alt text](<snapshots/Pasted Graphic 1.png>)
+![alt text](<snapshots/Pasted Graphic 2.png>)
 
 ---
 
@@ -95,8 +95,8 @@ The following secrets need to be set up in your GitHub repository for the workfl
 - `AWS_ROLE_ARN`: Your AWS roles ARN
 
 ### Reference Image
-![alt text](image-2.png)
-![alt text](image-3.png)
+![alt text](snapshots/image-2.png)
+![alt text](snapshots/image-3.png)
 
 ---
 Note: The project can be improved in terms of security, monitoring, efficiency, scalability, and reliability. However, due to time constraints, it is currently limited to this version.
