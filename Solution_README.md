@@ -41,7 +41,7 @@ Achived statefile Locking using DynamoDB.
 
 ### Directory Structure
 
-![alt text](image-1.png)
+![alt text](snapshots/image-1.png)
 
 ---
 
@@ -54,7 +54,7 @@ The helm chart is organised in to basic structuere of helm chart.
 
 ### Directory Structure
 
-![alt text](image.png)
+![alt text](snapshots/image.png)
 
 ### Deployed successfully in the EKS cluster
 Attached few screenshot of the output where the application is deployed successfully in the EKS cluster.
