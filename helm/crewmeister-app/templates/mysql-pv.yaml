@@ -4,10 +4,10 @@ metadata:
   name: mysql-pv
 spec:
   capacity:
-    storage: 10Gi  # Adjust if needed
+    storage: 5Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: manual  # Ensure this matches the PVC
+  storageClassName: manual  # Matches the PVC StorageClass
   hostPath:
-    path: "/mnt/data"  # Change this based on your storage setup
+    path: "/mnt/data"

@@ -20,6 +20,8 @@ spec:
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://db:3306/challenge?createDatabaseIfNotExist=true
+            - name: SPRING_DATASOURCE_WRITER_URL
+              value: jdbc:mysql://db:3306/challenge?createDatabaseIfNotExist=true
             - name: SPRING_DATASOURCE_USERNAME
               value: root
             - name: SPRING_DATASOURCE_PASSWORD
