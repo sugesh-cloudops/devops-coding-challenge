@@ -50,12 +50,22 @@ Achived statefile Locking using DynamoDB.
 The `helm` folder contains the **Helm chart** used to deploy the application **crewmeister-app**to a **Kubernetes cluster** created by using terraform. 
 
 ### Key-Points
-
+The helm chart is organised in to basic structuere of helm chart.
 
 ### Directory Structure
 
 ![alt text](image.png)
 
+### Deployed successfully in the EKS cluster
+Attached few screenshot of the output where the application is deployed successfully in the EKS cluster.
+![alt text](<Pasted Graphic.png>)
+![alt text](<Pasted Graphic 1.png>)
+![alt text](<Pasted Graphic 2.png>)
+
+
+### Directory Structure
+
+![alt text](image.png)
 
 ### Deployed successfully in the EKS cluster
 Attached few screenshot of the output where the application is deployed successfully in the EKS cluster.
@@ -89,7 +99,7 @@ The following secrets need to be set up in your GitHub repository for the workfl
 ![alt text](image-3.png)
 
 ---
-
+Note: The project can be improved in terms of security, monitoring, efficiency, scalability, and reliability. However, due to time constraints, it is currently limited to this version.
 
 
 

@@ -20,9 +20,26 @@ spec:
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://db:3306/challenge?createDatabaseIfNotExist=true
-            - name: SPRING_DATASOURCE_WRITER_URL
-              value: jdbc:mysql://db:3306/challenge?createDatabaseIfNotExist=true
             - name: SPRING_DATASOURCE_USERNAME
               value: root
             - name: SPRING_DATASOURCE_PASSWORD
               value: dev
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
