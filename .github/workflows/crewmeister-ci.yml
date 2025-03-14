@@ -84,6 +84,9 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
 
+    - name: Debug AWS_ROLE_ARN
+      run: echo "AWS_ROLE_ARN=${{ secrets.AWS_ROLE_ARN }}"
+
     # 🔑 Configure AWS Credentials Using OIDC (No Access Keys Needed)
     - name: Configure AWS Credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v2
