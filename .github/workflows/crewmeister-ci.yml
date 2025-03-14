@@ -73,14 +73,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Verify AWS Identity
-      run: aws sts get-caller-identity
+    
 
     - name: Configure AWS Credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Verify AWS Identity
+      run: aws sts get-caller-identity
 
     - name: Update Kubeconfig
       run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
