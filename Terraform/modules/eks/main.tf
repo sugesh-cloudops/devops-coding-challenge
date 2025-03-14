@@ -70,3 +70,48 @@ scaling_config {
     aws_iam_role_policy_attachment.node_policy
   ]
 }
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
+
+  # Use a dummy thumbprint; it will be ignored after import
+  thumbprint_list = ["ffffffffffffffffffffffffffffffffffffffff"]
+
+  # Prevent Terraform from modifying the thumbprint since AWS manages it automatically
+  lifecycle {
+    ignore_changes = [thumbprint_list]
+  }
+}
+
+resource "aws_iam_role" "github_actions" {
+  name = "GitHubActions-EKS-Deploy"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.github.arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:sugesh-cloudops/devops-coding-challenge:ref:refs/heads/feature/branch"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_eks" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.github_actions.name
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+  role       = aws_iam_role.github_actions.name
+}
+
+
+
