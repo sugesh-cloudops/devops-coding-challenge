@@ -67,11 +67,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    
-    - name: Install AWS CLI
-      run: |
-        sudo apt-get update -y
-        sudo apt-get install -y awscli
+  
 
     
     - name: Debug GitHub OIDC Token Request
