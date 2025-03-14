@@ -73,6 +73,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Enable Debug Logging
+      run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
+      
     - name: Configure AWS Credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v2
       with:
