@@ -114,4 +114,34 @@ resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
 }
 
 
+resource "aws_iam_policy" "github_eks_access" {
+  name        = "GitHubEKSAccessPolicy"
+  description = "Allow GitHub Actions to assume the EKS role"
 
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "sts:AssumeRole"
+        Resource = "arn:aws:iam::535002870929:role/GitHubActions-EKS-Deploy"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "eks:AccessKubernetesApi",
+          "eks:DescribeNodegroup",
+          "eks:ListNodegroups"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_eks_attach" {
+  policy_arn = aws_iam_policy.github_eks_access.arn
+  role       = aws_iam_role.github_actions.name
+}
