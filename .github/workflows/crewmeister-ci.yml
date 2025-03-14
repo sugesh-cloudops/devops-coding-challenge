@@ -110,9 +110,6 @@ jobs:
     - name: Update kubeconfig
       run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-    #  Debug Step: Verify Kubernetes Node Status
-    - name: Verify Kubernetes Access
-      run: kubectl get nodes
 
     #  Deploy the application using Helm
     - name: Deploy Helm
