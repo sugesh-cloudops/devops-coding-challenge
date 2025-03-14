@@ -68,30 +68,52 @@ jobs:
   updatek8s:
     runs-on: ubuntu-latest
     needs: docker
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/feature/')
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    
+    # 🛠️ Debug Step: List all environment variables to check AWS credentials
+    - name: Debug GitHub Actions Environment Variables
+      run: env | sort
 
+    # 🛠️ Debug Step: Show GitHub Actions Context
+    - name: Check GitHub Actions Context
+      run: echo "$GITHUB_CONTEXT"
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+
+    # 🔑 Configure AWS Credentials Using OIDC (No Access Keys Needed)
     - name: Configure AWS Credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: ${{ secrets.AWS_REGION }}
+        audience: sts.amazonaws.com
 
+    # 🛠️ Debug Step: Verify AWS Identity
     - name: Verify AWS Identity
       run: aws sts get-caller-identity
 
-    - name: Update Kubeconfig
+    # 🛠️ Debug Step: Check if EKS Cluster is Reachable
+    - name: Describe EKS Cluster
+      run: aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+    # 🛠️ Debug Step: Update kubeconfig to ensure kubectl can communicate with EKS
+    - name: Update kubeconfig
       run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
+    # 🛠️ Debug Step: Verify Kubernetes Node Status
+    - name: Verify Kubernetes Access
+      run: kubectl get nodes
+
+    # 🚀 Deploy the application using Helm
     - name: Deploy Helm
       uses: bitovi/github-actions-deploy-eks-helm@v1.2.12
       with:
         aws-region: ${{ secrets.AWS_REGION }}
-        cluster-name: Crewmeister-cluster
+        cluster-name: ${{ secrets.EKS_CLUSTER_NAME }}
         cluster-role-arn: ${{ secrets.AWS_ROLE_ARN }}
         config-files: helm/crewmeister-app/values.yaml
         chart-path: helm/crewmeister-app
