@@ -114,6 +114,10 @@ jobs:
     #  Deploy the application using Helm
     - name: Deploy Helm
       uses: bitovi/github-actions-deploy-eks-helm@v1.2.12
+      env:
+        AWS_ACCESS_KEY_ID: ${{ steps.aws-creds.outputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ steps.aws-creds.outputs.aws-secret-access-key }}
+        AWS_SESSION_TOKEN: ${{ steps.aws-creds.outputs.aws-session-token }}
       with:
         aws-region: ${{ secrets.AWS_REGION }}
         cluster-name: ${{ secrets.EKS_CLUSTER_NAME }}
