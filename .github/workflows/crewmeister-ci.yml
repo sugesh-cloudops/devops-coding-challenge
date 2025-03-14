@@ -74,6 +74,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Get GitHub Token
+      run: echo "$ACTIONS_ID_TOKEN_REQUEST_URL"
+
     # 🛠️ Debug Step: List all environment variables to check AWS credentials
     - name: Debug GitHub Actions Environment Variables
       run: env | sort
