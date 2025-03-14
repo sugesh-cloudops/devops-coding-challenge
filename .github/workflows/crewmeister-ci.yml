@@ -73,9 +73,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Enable Debug Logging
-      run: env | grep AWS
-
     - name: Verify AWS Identity
       run: aws sts get-caller-identity
 
