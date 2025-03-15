@@ -1,82 +1,45 @@
 name: crewmeister-ci
 
-on: 
+on:
   push:
     branches:
       - main
       - feature/*
-  pull_request:
-    branches:
-      - main
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
-  updatek8s:
+  deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/feature/')
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
     - name: Configure AWS Credentials (OIDC)
-      id: aws-creds
-      uses: aws-actions/configure-aws-credentials@v3
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: ${{ secrets.AWS_REGION }}
         audience: sts.amazonaws.com
 
-    - name: Debug AWS Credentials
+    - name: Update kubeconfig for EKS
       run: |
-        echo "AWS_ACCESS_KEY_ID=${{ steps.aws-creds.outputs.aws-access-key-id }}"
-        echo "AWS_SECRET_ACCESS_KEY=${{ steps.aws-creds.outputs.aws-secret-access-key }}"
-        echo "AWS_SESSION_TOKEN=${{ steps.aws-creds.outputs.aws-session-token }}"
-        aws sts get-caller-identity
+        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }}
 
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} \
-          --region ${{ secrets.AWS_REGION }} \
-          --role-arn ${{ secrets.AWS_ROLE_ARN }} \
-          --alias github-actions
-
-    - name: Verify AWS Auth & Cluster
-      run: |
-        aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
-        aws eks get-token --cluster-name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
-    
     - name: Verify Kubernetes Access
-      run: |
-        kubectl config view
-        kubectl get svc
+      run: kubectl get nodes
 
-    - name: Verify AWS Credentials Before Helm
+    - name: Install Helm
       run: |
-        echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
-        echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
-        echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN"
-        aws sts get-caller-identity
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - name: Deploy Helm
-      uses: bitovi/github-actions-deploy-eks-helm@v1.2.12
-      env:
-        AWS_ACCESS_KEY_ID: ${{ steps.aws-creds.outputs.aws-access-key-id }}
-        AWS_SECRET_ACCESS_KEY: ${{ steps.aws-creds.outputs.aws-secret-access-key }}
-        AWS_SESSION_TOKEN: ${{ steps.aws-creds.outputs.aws-session-token }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-      with:
-        aws-region: ${{ secrets.AWS_REGION }}
-        cluster-name: ${{ secrets.EKS_CLUSTER_NAME }}
-        cluster-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-        config-files: helm/crewmeister-app/values.yaml
-        chart-path: helm/crewmeister-app
-        namespace: default
-        create-namespace: true
-        name: crewmeister-app
-        action: install
-        dry-run: false
-        update-deps: true
+    - name: Deploy Helm Chart
+      run: |
+        helm upgrade --install crewmeister-app helm/crewmeister-app \
+          --namespace default \
+          --create-namespace \
+          --values helm/crewmeister-app/values.yaml \
+          --wait
+
+    - name: Verify Helm Deployment
+      run: |
+        helm list -n default
+        kubectl get pods -n default
