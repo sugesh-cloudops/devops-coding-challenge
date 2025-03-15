@@ -29,6 +29,12 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: ${{ secrets.AWS_REGION }}
         audience: sts.amazonaws.com
+    
+    - name: Manually Export AWS Credentials
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ steps.aws-creds.outputs.aws-access-key-id }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ steps.aws-creds.outputs.aws-secret-access-key }}" >> $GITHUB_ENV
+        echo "AWS_SESSION_TOKEN=${{ steps.aws-creds.outputs.aws-session-token }}" >> $GITHUB_ENV
 
     - name: Debug AWS Credentials
       run: |
@@ -42,12 +48,15 @@ jobs:
     - name: Update kubeconfig
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }}
+    
+    - name: Debug Kubernetes Access
+      run: kubectl get nodes
 
     - name: Debug AWS Credentials Before Helm
       run: |
-        echo "AWS_ACCESS_KEY_ID=${{ steps.aws-creds.outputs.aws-access-key-id }}"
-        echo "AWS_SECRET_ACCESS_KEY=${{ steps.aws-creds.outputs.aws-secret-access-key }}"
-        echo "AWS_SESSION_TOKEN=${{ steps.aws-creds.outputs.aws-session-token }}"
+        echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
+        echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
+        echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN"
         aws sts get-caller-identity
 
     - name: Deploy Helm
