@@ -43,6 +43,11 @@ jobs:
           --region ${{ secrets.AWS_REGION }} \
           --role-arn ${{ secrets.AWS_ROLE_ARN }} \
           --alias github-actions
+
+    - name: Verify AWS Auth & Cluster
+      run: |
+        aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+        aws eks get-token --cluster-name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
     
     - name: Verify Kubernetes Access
       run: |
