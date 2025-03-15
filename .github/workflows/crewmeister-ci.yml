@@ -28,20 +28,30 @@ jobs:
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }}
 
-    - name: Verify Kubernetes Access
-      run: kubectl get nodes
-
-    - name: Install Helm
+    - name: Debug Kubernetes Access
       run: |
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-    - name: Deploy Helm Chart
+        kubectl cluster-info
+        kubectl get nodes
+        kubectl get pods -n default
+    
+    - name: Verify AWS Identity
+      run: aws sts get-caller-identity
+    
+    - name: Deploy Helm Chart (Debug)
       run: |
         helm upgrade --install crewmeister-app helm/crewmeister-app \
           --namespace default \
           --create-namespace \
           --values helm/crewmeister-app/values.yaml \
+          --timeout 10m \
+          --debug \
           --wait
+    
+    - name: Debug Kubernetes State
+      run: |
+        kubectl get pods -n default -o wide
+        kubectl describe pods -n default
+        kubectl get events -n default --sort-by=.metadata.creationTimestamp
 
     - name: Verify Helm Deployment
       run: |
