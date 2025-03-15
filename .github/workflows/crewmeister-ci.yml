@@ -52,6 +52,12 @@ jobs:
 
     - name: Deploy Helm
       uses: bitovi/github-actions-deploy-eks-helm@v1.2.12
+      env:
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+        AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        KUBECONFIG: /github/home/.kube/config  
       with:
         aws-region: ${{ secrets.AWS_REGION }}
         cluster-name: ${{ secrets.EKS_CLUSTER_NAME }}
@@ -64,6 +70,3 @@ jobs:
         action: install
         dry-run: false
         update-deps: true
-        aws-access-key-id: ${{ steps.aws-creds.outputs.aws-access-key-id }}  
-        aws-secret-access-key: ${{ steps.aws-creds.outputs.aws-secret-access-key }}
-        aws-session-token: ${{ steps.aws-creds.outputs.aws-session-token }}
