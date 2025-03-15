@@ -39,10 +39,15 @@ jobs:
 
     - name: Update kubeconfig
       run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }}
+        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} \
+          --region ${{ secrets.AWS_REGION }} \
+          --role-arn ${{ secrets.AWS_ROLE_ARN }} \
+          --alias github-actions
     
-    - name: Debug Kubernetes Access
-      run: kubectl get nodes
+    - name: Verify Kubernetes Access
+      run: |
+        kubectl config view
+        kubectl get svc
 
     - name: Verify AWS Credentials Before Helm
       run: |
