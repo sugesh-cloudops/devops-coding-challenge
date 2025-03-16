@@ -43,10 +43,10 @@ jobs:
 
     - name: Debug Kubernetes Access
       run: |
+        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }} --alias github-actions
         kubectl cluster-info
         kubectl get nodes
         kubectl get pods -n default
-    
 
     
     - name: Deploy Helm Chart (Debug)
