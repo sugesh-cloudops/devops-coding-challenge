@@ -41,6 +41,12 @@ jobs:
           --role-arn ${{ secrets.AWS_ROLE_ARN }} \
           --alias github-actions
 
+    - name: Verify kubectl Installation
+      run: |
+        which kubectl
+        kubectl version --client
+
+
     - name: Debug Kubernetes Access
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }} --alias github-actions
