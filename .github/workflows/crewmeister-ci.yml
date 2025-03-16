@@ -29,17 +29,6 @@ jobs:
     - name: Check IAM Role
       run: aws iam get-role --role-name GitHubActions-EKS-Deploy
 
-    - name: Attach Necessary Policies
-      run: |
-        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
-        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
-        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEKSServicePolicy
-        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/IAMReadOnlyAccess
-
-    - name: Test IAM Role Permissions  
-      run: aws sts assume-role --role-arn ${{ secrets.AWS_ROLE_ARN }} --role-session-name GitHubActionsTest
-
     - name: Verify OIDC Providers
       run: aws iam list-open-id-connect-providers    
 
