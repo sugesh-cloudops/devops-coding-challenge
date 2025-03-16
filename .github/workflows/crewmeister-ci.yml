@@ -24,9 +24,19 @@ jobs:
         aws-region: ${{ secrets.AWS_REGION }}
         audience: sts.amazonaws.com
 
+    - name: Verify AWS Identity
+      run: aws sts get-caller-identity
+    
+    - name: Check IAM Role
+      run: aws iam get-role --role-name GitHubActions-EKS-Deploy
+
     - name: Update kubeconfig for EKS
       run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }}
+        aws eks update-kubeconfig \
+          --name ${{ secrets.EKS_CLUSTER_NAME }} \
+          --region ${{ secrets.AWS_REGION }} \
+          --role-arn ${{ secrets.AWS_ROLE_ARN }} \
+          --alias github-actions
 
     - name: Debug Kubernetes Access
       run: |
@@ -34,8 +44,7 @@ jobs:
         kubectl get nodes
         kubectl get pods -n default
     
-    - name: Verify AWS Identity
-      run: aws sts get-caller-identity
+
     
     - name: Deploy Helm Chart (Debug)
       run: |
