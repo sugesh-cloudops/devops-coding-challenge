@@ -21,3 +21,4 @@ db:
     MYSQL_DATABASE: challenge
   storage:
     size: 5Gi
+

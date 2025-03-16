@@ -31,3 +31,21 @@ build/
 
 ### VS Code ###
 .vscode/
+# Terraform State Files
+*.tfstate
+*.tfstate.backup
+errored.tfstate
+
+# Ignore Terraform lock file
+.terraform.lock.hcl
+
+# Ignore Terraform Caches and Modules
+.terraform/
+.terraform/*
+
+# Ignore any sensitive variable files
+*.auto.tfvars
+*.tfvars.json
+
+# Ignore generated logs or debug files
+crash.log
