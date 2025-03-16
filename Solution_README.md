@@ -65,7 +65,7 @@ Attached few screenshot of the output where the application is deployed successf
 
 ### Directory Structure
 
-![alt text](image.png)
+![alt text](<snapshots/image.png>)
 
 ### Deployed successfully in the EKS cluster
 Attached few screenshot of the output where the application is deployed successfully in the EKS cluster.
@@ -82,7 +82,7 @@ The CI/CD pipeline is defined using GitHub Actions and is located in the `.githu
 1. **Build**: Builds the application using Maven.
 2. **Code Quality**: Runs code quality checks using Maven.
 3. **Docker**: Builds and pushes a Docker image to Docker Hub. https://hub.docker.com/repository/docker/sugesh23/devops-coding-challenge/ 
-4. **UpdateK8s**: Updates the Kubernetes deployment manifest with the new Docker image tag and pushes the changes to the repository by using bitovi/github-actions-deploy-eks-helm@v1.2.12 from marketplace
+4. **UpdateK8s**: Updates the Kubernetes deployment manifest with the new Docker image tag and pushes the changes to the repository.
 
 ### Secrets
 The following secrets need to be set up in your GitHub repository for the workflow to function correctly:
