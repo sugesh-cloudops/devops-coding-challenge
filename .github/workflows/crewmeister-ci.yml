@@ -25,6 +25,13 @@ jobs:
 
     - name: Verify AWS Identity
       run: aws sts get-caller-identity
+
+    - name: Debug OIDC Token Retrieval
+      env:
+        ACTIONS_ID_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN }}
+      run: |
+        curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN" https://token.actions.githubusercontent.com/.well-known/openid-configuration
+
     
     - name: Check IAM Role
       run: aws iam get-role --role-name GitHubActions-EKS-Deploy
