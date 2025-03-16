@@ -5,77 +5,52 @@ on:
     branches:
       - main
       - feature/*
+
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  auth:
+    runs-on: ubuntu-latest
+    outputs:
+      aws_access_key_id: ${{ steps.auth.outputs.aws_access_key_id }}
+      aws_secret_access_key: ${{ steps.auth.outputs.aws_secret_access_key }}
+      aws_session_token: ${{ steps.auth.outputs.aws_session_token }}
+    steps:
+      - name: Configure AWS Credentials (OIDC)
+        id: auth
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
   deploy:
     runs-on: ubuntu-latest
+    needs: auth  # Depend on authentication job
+    env:
+      AWS_ACCESS_KEY_ID: ${{ needs.auth.outputs.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ needs.auth.outputs.aws_secret_access_key }}
+      AWS_SESSION_TOKEN: ${{ needs.auth.outputs.aws_session_token }}
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS Credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-        aws-region: ${{ secrets.AWS_REGION }}
-        audience: sts.amazonaws.com
+      - name: Use AWS Credentials in Other Jobs
+        run: |
+          aws sts get-caller-identity
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }}
 
-    - name: Verify AWS Identity
-      run: aws sts get-caller-identity
-
-    - name: Debug OIDC Token Retrieval
-      env:
-        ACTIONS_ID_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN }}
-      run: |
-        curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN" https://token.actions.githubusercontent.com/.well-known/openid-configuration
-
-    
-    - name: Check IAM Role
-      run: aws iam get-role --role-name GitHubActions-EKS-Deploy
-
-    - name: Verify OIDC Providers
-      run: aws iam list-open-id-connect-providers    
-
-    - name: Update kubeconfig for EKS
-      run: |
-        aws eks update-kubeconfig \
-          --name ${{ secrets.EKS_CLUSTER_NAME }} \
-          --region ${{ secrets.AWS_REGION }} \
-          --role-arn ${{ secrets.AWS_ROLE_ARN }} \
-          --alias github-actions
-
-    - name: Verify kubectl Installation
-      run: |
-        which kubectl
-        kubectl version --client
-
-    - name: Debug Kubernetes Access
-      run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }} --alias github-actions
-        kubectl cluster-info
-        kubectl get nodes
-        kubectl get pods -n default
-
-    - name: Deploy Helm Chart (Debug)
-      run: |
-        helm upgrade --install crewmeister-app helm/crewmeister-app \
-          --namespace default \
-          --create-namespace \
-          --values helm/crewmeister-app/values.yaml \
-          --timeout 10m \
-          --debug \
-          --wait
-    
-    - name: Debug Kubernetes State
-      run: |
-        kubectl get pods -n default -o wide
-        kubectl describe pods -n default
-        kubectl get events -n default --sort-by=.metadata.creationTimestamp
-
-    - name: Verify Helm Deployment
-      run: |
-        helm list -n default
-        kubectl get pods -n default
+      - name: Deploy Helm Chart
+        run: |
+          helm upgrade --install crewmeister-app helm/crewmeister-app \
+            --namespace default \
+            --create-namespace \
+            --values helm/crewmeister-app/values.yaml \
+            --timeout 10m \
+            --debug \
+            --wait
