@@ -30,6 +30,10 @@ jobs:
     - name: Check IAM Role
       run: aws iam get-role --role-name GitHubActions-EKS-Deploy
 
+
+    - name: attach policy
+      run: aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::535002870929:policy/GitHubEKSAccessPolicy
+
     - name: test permission is working  
       run: aws sts assume-role --role-arn arn:aws:iam::535002870929:role/GitHubActions-EKS-Deploy --role-session-name GitHubActionsTest
 
