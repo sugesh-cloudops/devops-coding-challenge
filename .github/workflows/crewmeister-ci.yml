@@ -41,8 +41,8 @@ jobs:
       - name: Debug Working Directory
         run: pwd && ls -la
       
-      - name: Debug Working Directory
-        run: pwd && ls -la
+      - name: Check Helm Chart Path
+        run: ls -R helm/
   
       
       - name: Deploy Helm Chart (Debug)
