@@ -71,16 +71,9 @@ scaling_config {
   ]
 }
 resource "aws_iam_openid_connect_provider" "github" {
-  url = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
-
-  # Use a dummy thumbprint; it will be ignored after import
-  thumbprint_list = ["ffffffffffffffffffffffffffffffffffffffff"]
-
-  # Prevent Terraform from modifying the thumbprint since AWS manages it automatically
-  lifecycle {
-    ignore_changes = [thumbprint_list]
-  }
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["d89e3bd43d5d909b47a18977aa9d5ce36cee184c"]
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -88,44 +81,42 @@ resource "aws_iam_role" "github_actions" {
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Federated = aws_iam_openid_connect_provider.github.arn
-      }
-      Action = "sts:AssumeRoleWithWebIdentity"
-      Condition = {
-        StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:sugesh-cloudops/devops-coding-challenge:ref:refs/heads/feature/branch"
+    Statement = [
+      {
+       
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::535002870929:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          "StringEquals": {
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          },
+          "StringLike": {
+            "token.actions.githubusercontent.com:sub": "repo:sugesh-cloudops/devops-coding-challenge:*"
+          }
         }
       }
-    }]
+    ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "github_actions_eks" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.github_actions.name
-}
-
-resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
-  role       = aws_iam_role.github_actions.name
-}
-
-
 resource "aws_iam_policy" "github_eks_access" {
   name        = "GitHubEKSAccessPolicy"
-  description = "Allow GitHub Actions to assume the EKS role"
+  description = "Allow GitHub Actions to assume the EKS role and interact with Kubernetes"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # Allow assuming the GitHubActions-EKS-Deploy role
       {
         Effect = "Allow"
         Action = "sts:AssumeRole"
         Resource = "arn:aws:iam::535002870929:role/GitHubActions-EKS-Deploy"
       },
+
+      # Allow EKS access
       {
         Effect = "Allow"
         Action = [
@@ -133,7 +124,48 @@ resource "aws_iam_policy" "github_eks_access" {
           "eks:ListClusters",
           "eks:AccessKubernetesApi",
           "eks:DescribeNodegroup",
-          "eks:ListNodegroups"
+          "eks:ListNodegroups",
+          "eks:DescribeFargateProfile"
+        ]
+        Resource = "*"
+      },
+
+      # Allow IAM role management for GitHubActions-EKS-Deploy
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:GetRole",
+          "iam:PassRole",
+          "iam:LisOpenIDConnectProviders",
+          "iam:GetOpenIDConnectProvider"
+        ]
+        Resource = "arn:aws:iam::535002870929:role/GitHubActions-EKS-Deploy"
+      },
+
+      # Allow interaction with Kubernetes resources
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeVpcs",
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeRules",
+          "eks:ListTagsForResource"
+        ]
+        Resource = "*"
+      },
+
+      # Allow read-only access to logs for debugging
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:GetLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
         ]
         Resource = "*"
       }
