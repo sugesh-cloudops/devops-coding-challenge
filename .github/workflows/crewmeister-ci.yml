@@ -9,7 +9,6 @@ permissions:
   id-token: write
   contents: read
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,14 +29,18 @@ jobs:
     - name: Check IAM Role
       run: aws iam get-role --role-name GitHubActions-EKS-Deploy
 
+    - name: Attach Necessary Policies
+      run: |
+        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::aws:policy/IAMReadOnlyAccess
 
-    - name: attach policy
-      run: aws iam attach-role-policy --role-name GitHubActions-EKS-Deploy --policy-arn arn:aws:iam::535002870929:policy/GitHubEKSAccessPolicy
+    - name: Test IAM Role Permissions  
+      run: aws sts assume-role --role-arn ${{ secrets.AWS_ROLE_ARN }} --role-session-name GitHubActionsTest
 
-    - name: test permission is working  
-      run: aws sts assume-role --role-arn arn:aws:iam::535002870929:role/GitHubActions-EKS-Deploy --role-session-name GitHubActionsTest
-
-    - name: verify OIDC providers
+    - name: Verify OIDC Providers
       run: aws iam list-open-id-connect-providers    
 
     - name: Update kubeconfig for EKS
@@ -53,7 +56,6 @@ jobs:
         which kubectl
         kubectl version --client
 
-
     - name: Debug Kubernetes Access
       run: |
         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --role-arn ${{ secrets.AWS_ROLE_ARN }} --alias github-actions
@@ -61,7 +63,6 @@ jobs:
         kubectl get nodes
         kubectl get pods -n default
 
-    
     - name: Deploy Helm Chart (Debug)
       run: |
         helm upgrade --install crewmeister-app helm/crewmeister-app \
