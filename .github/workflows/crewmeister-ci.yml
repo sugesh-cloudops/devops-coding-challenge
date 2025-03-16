@@ -36,10 +36,5 @@ jobs:
 
       - name: Deploy Helm Chart
         run: |
-          helm upgrade --install crewmeister-app helm/crewmeister-app \
-            --namespace default \
-            --create-namespace \
-            --values helm/crewmeister-app/values.yaml \
-            --timeout 10m \
-            --debug \
-            --wait
+          helm install crewmeister-app crewmeister-app
+        
