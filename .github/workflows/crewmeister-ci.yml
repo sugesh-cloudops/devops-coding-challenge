@@ -13,70 +13,68 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Build with Maven
-      run: mvn clean install -DskipTests
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
 
   code-quality:
     runs-on: ubuntu-latest
-    needs: build
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Run Code Quality Checks
-      run: mvn verify
+      - name: Run Code Quality Checks
+        run: mvn verify
 
   docker:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build  
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/feature/')
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Push Docker Image
-      run: |
-        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKER_USERNAME }}/devops-coding-challenge:latest --push .
+      - name: Build and Push Docker Image
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t ${{ secrets.DOCKER_USERNAME }}/devops-coding-challenge:latest --push .
 
   updatek8s:
     runs-on: ubuntu-latest
+    needs: docker  
     outputs:
       aws_access_key_id: ${{ steps.auth.outputs.aws_access_key_id }}
       aws_secret_access_key: ${{ steps.auth.outputs.aws_secret_access_key }}
       aws_session_token: ${{ steps.auth.outputs.aws_session_token }}
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v3
-    
+
       - name: Configure AWS Credentials (OIDC)
         id: auth
         uses: aws-actions/configure-aws-credentials@v2
@@ -88,24 +86,31 @@ jobs:
       - name: Verify AWS Identity
         run: aws sts get-caller-identity
 
-      - name: Use AWS Credentials in Other Jobs
-        run: |
-          aws sts get-caller-identity
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} 
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-      - name: Verify Helm Installation
+      - name: Verify Helm Repo & Releases
         run: |
-          helm version
+          helm repo list
+          helm ls -n default || true  
 
-      - name: Debug Working Directory
-        run: pwd && ls -la
-      
-      - name: Check Helm Chart Path
-        run: ls -R helm/
-  
-      
       - name: Deploy Helm Chart (Debug)
         run: |
           helm upgrade --install crewmeister-app ./helm/crewmeister-app \
-  
-        
+            --namespace default \
+            --create-namespace \
+            --values ./helm/crewmeister-app/values.yaml \
+            --timeout 10m \
+            --debug \
+            --wait
+
+      - name: Debug Kubernetes State
+        run: |
+          kubectl get pods -n default -o wide
+          kubectl describe pods -n default
+          kubectl get events -n default --sort-by=.metadata.creationTimestamp
+
+      - name: Verify Helm Deployment
+        run: |
+          helm list -n default
+          kubectl get pods -n default
