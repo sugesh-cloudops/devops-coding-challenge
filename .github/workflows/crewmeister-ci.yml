@@ -30,6 +30,9 @@ jobs:
     - name: Check IAM Role
       run: aws iam get-role --role-name GitHubActions-EKS-Deploy
 
+    - name: verify OIDC providers
+      run: aws iam list-open-id-connect-providers    
+
     - name: Update kubeconfig for EKS
       run: |
         aws eks update-kubeconfig \
