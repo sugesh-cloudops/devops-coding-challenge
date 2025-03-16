@@ -52,10 +52,5 @@ jobs:
       - name: Deploy Helm Chart (Debug)
         run: |
           helm upgrade --install crewmeister-app ./helm/crewmeister-app \
-            --namespace default \
-            --create-namespace \
-            --values ./helm/crewmeister-app/values.yaml \
-            --timeout 10m \
-            --debug \
-            --wait
+  
         
