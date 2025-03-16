@@ -30,6 +30,9 @@ jobs:
     - name: Check IAM Role
       run: aws iam get-role --role-name GitHubActions-EKS-Deploy
 
+    - name: test permission is working  
+      run: aws sts assume-role --role-arn arn:aws:iam::535002870929:role/GitHubActions-EKS-Deploy --role-session-name GitHubActionsTest
+
     - name: verify OIDC providers
       run: aws iam list-open-id-connect-providers    
 
