@@ -18,6 +18,10 @@ jobs:
       aws_secret_access_key: ${{ steps.auth.outputs.aws_secret_access_key }}
       aws_session_token: ${{ steps.auth.outputs.aws_session_token }}
     steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+    
       - name: Configure AWS Credentials (OIDC)
         id: auth
         uses: aws-actions/configure-aws-credentials@v2
