@@ -37,6 +37,13 @@ jobs:
       - name: Verify Helm Installation
         run: |
           helm version
+
+      - name: Debug Working Directory
+        run: pwd && ls -la
+      
+      - name: Debug Working Directory
+        run: pwd && ls -la
+  
       
       - name: Deploy Helm Chart (Debug)
         run: |
