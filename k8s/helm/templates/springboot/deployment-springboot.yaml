@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+  labels:
+    app: {{ .Values.app.name }}
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: my-app-sa
+      containers:
+        - name: {{ .Values.app.name }}
+          image: {{ .Values.app.image }}:{{ .Values.app.tag }}
+          ports:
+            - containerPort: {{ .Values.readinessProbe.port }}
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: {{ .Values.app.name }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secretKeyRef.name }}
+                  key: {{ .Values.mysql.secretKeyRef.key }}
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql-0.mysql-headless:{{ .Values.mysql.port }}/{{ .Values.mysql.database }}?createDatabaseIfNotExist=true
+            - name: SPRING_DATASOURCE_WRITER_URL
+              value: jdbc:mysql://mysql-0.mysql-headless:{{ .Values.mysql.port }}/{{ .Values.mysql.database }}?createDatabaseIfNotExist=true
+            - name: ACTUATOR_ENDPOINTS
+              value: health,info,prometheus
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
