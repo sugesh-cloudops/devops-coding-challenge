@@ -1,63 +1,179 @@
-# Crewmeister Challenge
+# 🚀 Spring Boot + MySQL on Kubernetes
 
-## Background
-
-At Crewmeister, our development team is continuously growing. We aim to hire the best educated, motivated, and enthusiastic people in the field who have fun building up Crewmeister in our vision to empower small businesses to thrive in a digital world. For this quest, we are continuously getting new applicants from all over the world. To filter which candidates could be a good fit, we provide our candidates with a coding challenge that we manually review and evaluate.
+A production-grade Kubernetes deployment for a Spring Boot application backed by MySQL, built with security, scalability, and automation in mind.
 
 ---
 
-## DevOps Engineer Task
+## 📆 Stack Overview
 
-As a DevOps Engineer at Crewmeister, you will be in charge of several challenging tasks in your daily work. One of your core responsibilities will be to ensure that the system is always running smoothly and that the application is deployed successfully to our customers.
+| Layer                  | Tech/Tool |
+|------------------------|-----------|
+| Application            | Spring Boot (Java 17) |
+| Database               | MySQL (StatefulSet + PVC) |
+| Secrets Management     | AWS Secrets Manager + External Secrets Operator |
+| Kubernetes Templating  | Helm |
+| Env-specific Overrides | Kustomize |
+| CI/CD Pipeline         | GitHub Actions |
+| Observability          | Prometheus-ready integration hooks |
 
-In this challenge, you should use DevOps best practices to architect and implement the complete cycle of building, packaging, and deploying a Java application (specified later in this document). 
+---
 
-The following are core technologies/tools that should be present in the solution:
+## ✨ Key Features
 
-- Dockerfile
-- Helm Chart
-- Terraform to interact with the Kubernetes cluster
+| Feature                         | Description |
+|----------------------------------|-------------|
+| ✅ Dockerized Spring Boot        | With Flyway DB migrations |
+| ✅ MySQL via StatefulSet         | With persistent volumes |
+| ✅ AWS Secrets Manager           | Centralized secret storage |
+| ✅ External Secrets Operator     | Automatic sync of AWS secrets to K8s |
+| ✅ Helm Charts                   | Clean, reusable templating |
+| ✅ Kustomize Overlays            | Per-environment configurations (dev, staging, prod) |
+| ✅ TLS via cert-manager + Let's Encrypt | Secure HTTPS via Ingress |
+| ✅ Ingress (NGINX)               | With routing, HTTPS, and rewrite support |
+| ✅ Horizontal Pod Autoscaler     | Auto-scales app based on CPU |
+| ✅ CI/CD Pipeline                | GitHub Actions with multi-stage flow |
+| ✅ Secure Image Handling         | Versioned image tags, no `latest` used |
+| ✅ Health Probes & Limits        | Readiness/liveness probes and resource limits |
 
-You have the flexibility to utilize any cloud provider of your choice to deploy and run the application effectively. Additionally, it should be designed to operate seamlessly on local machines, allowing for a versatile setup that caters to various operational preferences and environments.
+---
 
-## Plus:
+## 📂 Folder Structure
 
-- Create a CI Pipeline in Github to automate the application lifecycle
+```bash
+k8s/
+├── base/                          # Common base manifests for Kustomize
+│   ├── deployment.yaml
+│   ├── mysql-service.yaml
+│   ├── mysql-statefulset.yaml
+│   ├── service.yaml
+│   └── kustomization.yaml
 
-- Add monitoring tools to check the health of the application
+├── overlays/                      # Environment-specific overlays (Kustomize)
+│   ├── dev/
+│   │   ├── configmap.yaml
+│   │   ├── kustomization.yaml
+│   │   ├── mysql-external-secret.yaml
+│   │   ├── namespace.yaml
+│   │   ├── secret-store.yaml
+│   │   └── cluster-issuer.yaml    # cert-manager ClusterIssuer (staging/prod)
+│   └── staging/
+│   └── prod/
 
-## Important Points:
+├── helm/                          # Helm chart for full app deployment
+│   ├── Chart.yaml
+│   ├── values.yaml                # Default config
+│   └── templates/
+│       ├── _helpers.tpl
+│       ├── configmap-mysql.yaml
+│       ├── secret-external-mysql.yaml
+│       ├── secretstore-aws.yaml
+│       ├── serviceaccount.yaml
+│       ├── mysql/
+│       │   ├── service-mysql-headless.yaml
+│       │   └── statefulset-mysql.yaml
+│       ├── springboot/
+│       │   ├── deployment-springboot.yaml
+│       │   ├── hpa-springboot.yaml
+│       │   ├── ingress-springboot.yaml
+│       │   └── service-springboot.yaml
+│       └── tests/
+│           └── test-connection.yaml
 
-- At Crewmeister, we value creativity and pushing for better. You are encouraged to expand the solution as you find fit. To do so, you must ensure high-quality documentation and that the base solution is correctly executed.
-- All the tools used must be publicly accessible or explicitly documented on how to authenticate.
-- All the tools must be free to use.
+├── values/                        # Helm values per environment
+│   ├── dev-values.yaml
+│   ├── staging-values.yaml
+│   └── prod-values.yaml
 
-## Challenge Application
+.github/
+└── workflows/
+    └── crewmeister-ci.yaml       # CI/CD pipeline definition
+```
 
-A Spring Boot application that provides a simple user management REST API.
+---
 
-### Technologies Used
+## 🛠️ Usage Guide
 
-- Java 17
-- Spring Boot 3.3.5
-- MySQL Database
-- Flyway Migration
-- Maven
-- Spring Data JPA
-- Spring Actuator
+### ✅ Apply Kustomize Overlay (Dev)
 
-### Pre-requisites
+```bash
+kubectl apply -k k8s/overlays/dev
+```
 
-- JDK 17
-- MySQL
-- Maven
+### ❌ Delete Dev Resources
 
-### API Endpoints
+```bash
+kubectl delete -k k8s/overlays/dev
+```
 
-#### GET /user
+---
 
-Retrieves a user by ID
+### 🥤 Helm Usage
 
-#### POST /user
+```bash
+# Install
+helm install my-app ./k8s/helm -f ./k8s/values/dev-values.yaml
 
-Creates a new user
+# Upgrade
+helm upgrade my-app ./k8s/helm -f ./k8s/values/dev-values.yaml
+
+# Uninstall
+helm uninstall my-app
+```
+
+---
+
+### 🌐 Port Forward for Local Access
+
+```bash
+kubectl port-forward svc/my-app-service -n dev 8080:80
+```
+
+Then access: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 🔐 AWS Secrets Setup
+
+Before deploying, manually create the AWS credentials secret in your cluster:
+
+```bash
+kubectl create secret generic aws-credentials \
+  --from-literal=access-key-id=<AWS_ACCESS_KEY_ID> \
+  --from-literal=secret-access-key=<AWS_SECRET_ACCESS_KEY>
+```
+
+> **Note**: Never commit your AWS credentials to Git or store them in `values.yaml`.
+
+---
+
+## ⚙️ GitHub Actions CI/CD (`.github/workflows/crewmeister-ci.yaml`)
+
+| Stage         | Description |
+|---------------|-------------|
+| `build`       | Compiles the app with Maven |
+| `code-quality`| Runs linting/tests |
+| `docker`      | Builds versioned image, pushes to Docker Hub |
+| `updatek8s`   | Deploys Helm chart to EKS using OIDC-authenticated GitHub Action |
+
+---
+
+## 🌟 Observability & Reliability
+
+- ✅ `readinessProbe` and `livenessProbe` configured
+- ✅ `resources.requests` and `limits` defined for CPU/memory
+- ✅ Horizontal Pod Autoscaler enabled for autoscaling
+- ✅ Ingress TLS via cert-manager (staging & prod)
+- ✅ Prepped for Prometheus metrics
+
+---
+
+## ✅ Best Practices Followed
+
+- No use of `:latest` tag in Docker builds
+- All secrets pulled dynamically via AWS Secret Manager
+- Values managed via Helm `values.yaml`
+- GitOps-compatible structure via Kustomize overlays
+- Externalized environment handling
+- Linted and validated YAML
+- Modular and extensible folder layout
+

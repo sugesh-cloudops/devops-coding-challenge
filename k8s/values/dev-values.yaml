@@ -1,0 +1,67 @@
+app:
+  name: app
+  image: sugesh23/springboot
+  tag: latest  # Will be dynamically set via CI/CD (e.g., commit SHA)
+  replicaCount: 1
+
+mysql:
+  database: challenge
+  image: mysql:8
+  port: 3306
+  pvc:
+    storage: 1Gi
+  secretKeyRef:
+    name: mysql-secret
+    key: mysql-root-password
+
+service:
+  name: my-app-service
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
+
+readinessProbe:
+  path: /actuator/health
+  port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+livenessProbe: 
+  path: /actuator/health
+  port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 10
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+ingress:
+  enabled: true
+  host: crewmiester.test.com
+  servicePort: 8080
+  clusterIssuer: letsencrypt-staging        
+  tlsSecretName: springboot-tls
+
+certManager:
+  enabled: true
+  email: crewmeister-test@test.com
+  clusterIssuerName: letsencrypt-staging
+  secretName: letsencrypt-prod-key
+  acmeServer: https://acme-v02.api.letsencrypt.org/directory
+
+aws:
+  region: us-west-2
+  secretName: devops-challenge-secret
+  secretProperty: mysql-root-password
+  credentialsSecretRef: aws-credentials  # Referenced in SecretStore
